@@ -10,7 +10,6 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
-import java.util.Locale;
 
 public class WeatherAppGUI extends JFrame {
     private JSONObject weatherData;
@@ -61,6 +60,12 @@ public class WeatherAppGUI extends JFrame {
         instructionLabel.setBounds(260, 70, 320, 30);
         instructionLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
         add(instructionLabel);
+
+        String[] weatherDays = {"Today", "Tomorrow", "After tomorrow", "In 3 days", "In 4 days", "In 5 days", "In 6 days"};
+        JComboBox<String> daySelector = new JComboBox<>(weatherDays);
+        daySelector.setBounds(15, 110, 120, 30);
+        daySelector.setFont(new Font("Dialog", Font.PLAIN, 16));
+        add(daySelector);
 
         JLabel cityLabel = new JLabel("...");
         cityLabel.setBounds(0, 120, 565, 45);
@@ -118,12 +123,24 @@ public class WeatherAppGUI extends JFrame {
                     return;
                 }
 
+                String selectedDay = (String) daySelector.getSelectedItem();
+                int dayOffset = 0;
+                switch (selectedDay) {
+                    case "Today" -> dayOffset = 0;
+                    case "Tomorrow" -> dayOffset = 1;
+                    case "After tomorrow" -> dayOffset = 2;
+                    case "In 3 days" -> dayOffset = 3;
+                    case "In 4 days" -> dayOffset = 4;
+                    case "In 5 days" -> dayOffset = 5;
+                    case "In 6 days" -> dayOffset = 6;
+                }
+
                 String selectedHour = (String) hourSelector.getSelectedItem();
                 int hour = selectedHour.equals("now") ?
                         LocalTime.now().getHour() :
                         Integer.parseInt(selectedHour.split(":")[0]);
 
-                weatherData = WeatherAppBackend.getWeatherData(userInput, hour, timezoneToggle.getText().toLowerCase());
+                weatherData = WeatherAppBackend.getWeatherData(userInput, dayOffset, hour, timezoneToggle.getText().toLowerCase());
 
                 String weatherCondition = (String) weatherData.get("weather_condition");
 

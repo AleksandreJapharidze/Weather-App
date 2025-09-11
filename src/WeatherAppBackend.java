@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class WeatherAppBackend {
-    public static JSONObject getWeatherData(String locationName, int hour, String timeZone) {
+    public static JSONObject getWeatherData(String locationName, int day, int hour, String timeZone) {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
@@ -30,7 +30,6 @@ public class WeatherAppBackend {
                 System.out.println("Failed: HTTP error code " + connection.getResponseCode());
                 return null;
             } else {
-
                 StringBuilder resultJson = new StringBuilder();
                 Scanner scanner = new Scanner(connection.getInputStream());
                 while (scanner.hasNext()) {
@@ -45,7 +44,7 @@ public class WeatherAppBackend {
 
                 JSONObject hourly = (JSONObject) resultjsonObject.get("hourly");
                 JSONArray time = (JSONArray) hourly.get("time");
-                int index = findIndexOfCurerntTime(time, hour);
+                int index = findIndexOfCurerntTime(time, day, hour);
 
                 JSONArray temperatureData = (JSONArray) hourly.get("temperature_2m");
                 double temperature = (double) temperatureData.get(index);
@@ -117,12 +116,11 @@ public class WeatherAppBackend {
         } catch (IOException e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
-    private static int findIndexOfCurerntTime(JSONArray timeList, int hour) {
-        String currentTime = getCurrentTime(hour);
+    private static int findIndexOfCurerntTime(JSONArray timeList, int day, int hour) {
+        String currentTime = getCurrentTime(day, hour);
 
         for (int i = 0; i < timeList.size(); i++) {
             String time = (String) timeList.get(i);
@@ -133,8 +131,8 @@ public class WeatherAppBackend {
         return 0;
     }
 
-    private static String getCurrentTime(int hour) {
-        LocalDateTime currentDateTime = LocalDateTime.now().withHour(hour)
+    private static String getCurrentTime(int day, int hour) {
+        LocalDateTime currentDateTime = LocalDateTime.now().plusDays(day).withHour(hour)
                 .withMinute(0)
                 .withSecond(0)
                 .withNano(0);
@@ -154,6 +152,34 @@ public class WeatherAppBackend {
         } else if (weatherCode >= 71L && weatherCode <= 77L) {
             weatherCondition = "Snow";
         }
+
+//        if (weatherCode == 0L) {
+//            weatherCondition = "Clear";
+//        } else if (weatherCode <= 3L && weatherCode >= 1L) {
+//            weatherCondition = "Partly Cloudy";
+//        } else if (weatherCode <= 48L && weatherCode >= 45L) {
+//            weatherCondition = "Fog";
+//        } else if (weatherCode <= 55L && weatherCode >= 51L) {
+//            weatherCondition = "Drizzle";
+//        } else if (weatherCode <= 57L && weatherCode >= 56L) {
+//            weatherCondition = "Freezing Drizzle";
+//        } else if (weatherCode <= 65L && weatherCode >= 61L) {
+//            weatherCondition = "Rain";
+//        } else if (weatherCode <= 67L && weatherCode >= 66L) {
+//            weatherCondition = "Freezing Rain";
+//        } else if (weatherCode <= 75L && weatherCode >= 71L) {
+//            weatherCondition = "Snow Fall";
+//        } else if (weatherCode == 77L) {
+//            weatherCondition = "Snow Grains";
+//        } else if (weatherCode <= 82L && weatherCode >= 80L) {
+//            weatherCondition = "Rain Showers";
+//        } else if (weatherCode <= 86L && weatherCode >= 85L) {
+//            weatherCondition = "Snow Showers";
+//        } else if (weatherCode == 95L) {
+//            weatherCondition = "Thunderstorm";
+//        } else if (weatherCode <= 99L && weatherCode >= 96L) {
+//            weatherCondition = "Thunderstorm with Hail";
+//        }
         return weatherCondition;
     }
 }
