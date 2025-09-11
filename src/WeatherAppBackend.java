@@ -14,7 +14,6 @@ public class WeatherAppBackend {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
-
         double latitude = (double) location.get("latitude");
         double longitude = (double) location.get("longitude");
 
@@ -131,7 +130,7 @@ public class WeatherAppBackend {
         return 0;
     }
 
-    public static String getCurrentTime(int hour) {
+    private static String getCurrentTime(int hour) {
         LocalDateTime currentDateTime = LocalDateTime.now().withHour(hour)
                 .withMinute(0)
                 .withSecond(0)
