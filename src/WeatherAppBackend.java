@@ -14,6 +14,7 @@ public class WeatherAppBackend {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
+
         double latitude = (double) location.get("latitude");
         double longitude = (double) location.get("longitude");
 
@@ -67,7 +68,6 @@ public class WeatherAppBackend {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
@@ -102,7 +102,6 @@ public class WeatherAppBackend {
         } catch (Exception e) {
             e.printStackTrace();
         }
-
         return null;
     }
 
@@ -129,7 +128,6 @@ public class WeatherAppBackend {
                 return i;
             }
         }
-
         return 0;
     }
 
@@ -140,7 +138,6 @@ public class WeatherAppBackend {
                 .withNano(0);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH':00'");
         String formattedDateTime = currentDateTime.format(formatter);
-
         return formattedDateTime;
     }
 
@@ -155,7 +152,6 @@ public class WeatherAppBackend {
         } else if (weatherCode >= 71L && weatherCode <= 77L) {
             weatherCondition = "Snow";
         }
-
         return weatherCondition;
     }
 }

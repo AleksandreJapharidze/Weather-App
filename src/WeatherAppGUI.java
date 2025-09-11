@@ -107,7 +107,8 @@ public class WeatherAppGUI extends JFrame {
                 weatherData = WeatherAppBackend.getWeatherData(userInput, hour);
 
                 String weatherCondition = (String) weatherData.get("weather_condition");
-                int currentHour = LocalTime.now().getHour();
+
+                int currentHour = LocalTime.now().withHour(hour).getHour();
 
                 switch (weatherCondition) {
                     case "Clear":
