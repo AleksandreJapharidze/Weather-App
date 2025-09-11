@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class WeatherAppBackend {
-    public static JSONObject getWeatherData(String locationName) {
+    public static JSONObject getWeatherData(String locationName, int hour) {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
@@ -43,7 +43,7 @@ public class WeatherAppBackend {
 
             JSONObject hourly = (JSONObject) resultjsonObject.get("hourly");
             JSONArray time = (JSONArray) hourly.get("time");
-            int index = findIndexOfCurerntTime(time);
+            int index = findIndexOfCurerntTime(time, hour);
 
             JSONArray temperatureData = (JSONArray) hourly.get("temperature_2m");
             double temperature = (double)  temperatureData.get(index);
@@ -120,11 +120,11 @@ public class WeatherAppBackend {
         return null;
     }
 
-    private static int findIndexOfCurerntTime(JSONArray timeList) {
-        String currentTime = getCurrentTime();
+    private static int findIndexOfCurerntTime(JSONArray timeList, int hour) {
+        String currentTime = getCurrentTime(hour);
 
         for (int i = 0; i < timeList.size(); i++) {
-            String time = (String)  timeList.get(i);
+            String time = (String) timeList.get(i);
             if (time.equalsIgnoreCase(currentTime)) {
                 return i;
             }
@@ -133,8 +133,11 @@ public class WeatherAppBackend {
         return 0;
     }
 
-    private static String getCurrentTime() {
-        LocalDateTime currentDateTime = LocalDateTime.now();
+    public static String getCurrentTime(int hour) {
+        LocalDateTime currentDateTime = LocalDateTime.now().withHour(hour)
+                .withMinute(0)
+                .withSecond(0)
+                .withNano(0);
         DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd'T'HH':00'");
         String formattedDateTime = currentDateTime.format(formatter);
 

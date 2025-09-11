@@ -32,6 +32,17 @@ public class WeatherAppGUI extends JFrame {
         searchField.setFont(new Font("Dialog", Font.PLAIN, 24));
         add(searchField);
 
+        String[] hours = new String[25];
+        hours[0] = "now";
+        for (int i = 0; i < 24; i++) {
+            hours[i + 1] = String.format("%02d:00", i);
+        }
+
+        JComboBox<String> hourSelector = new JComboBox<>(hours);
+        hourSelector.setBounds(15, 70, 120, 30);
+        hourSelector.setFont(new Font("Dialog", Font.PLAIN, 16));
+        add(hourSelector);
+
         JLabel cityLabel = new JLabel("...");
         cityLabel.setBounds(0, 120, 565, 45);
         cityLabel.setFont(new Font("Dialog", Font.PLAIN, 25));
@@ -88,7 +99,12 @@ public class WeatherAppGUI extends JFrame {
                     return;
                 }
 
-                weatherData = WeatherAppBackend.getWeatherData(userInput);
+                String selectedHour = (String) hourSelector.getSelectedItem();
+                int hour = selectedHour.equals("now") ?
+                        LocalTime.now().getHour() :
+                        Integer.parseInt(selectedHour.split(":")[0]);
+
+                weatherData = WeatherAppBackend.getWeatherData(userInput, hour);
 
                 String weatherCondition = (String) weatherData.get("weather_condition");
                 int currentHour = LocalTime.now().getHour();
