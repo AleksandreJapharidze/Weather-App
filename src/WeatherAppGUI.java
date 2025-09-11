@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
+import java.util.Locale;
 
 public class WeatherAppGUI extends JFrame {
     private JSONObject weatherData;
@@ -42,6 +43,24 @@ public class WeatherAppGUI extends JFrame {
         hourSelector.setBounds(15, 70, 120, 30);
         hourSelector.setFont(new Font("Dialog", Font.PLAIN, 16));
         add(hourSelector);
+
+        JToggleButton timezoneToggle = new JToggleButton("auto");
+        timezoneToggle.setBounds(145, 70, 100, 30);
+        timezoneToggle.setFont(new Font("Dialog", Font.PLAIN, 16));
+        timezoneToggle.addActionListener(e -> {
+            if (timezoneToggle.isSelected()) {
+                timezoneToggle.setText("Tbilisi");
+            } else {
+                timezoneToggle.setText("Auto");
+            }
+        });
+        add(timezoneToggle);
+
+        JLabel instructionLabel = new JLabel("<html><b>Select hour and toggle timezone(Auto or Tbilisi).</b> " +
+                "Auto timezone equates time in your location with the time in the searched city.</html>");
+        instructionLabel.setBounds(260, 70, 320, 30);
+        instructionLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
+        add(instructionLabel);
 
         JLabel cityLabel = new JLabel("...");
         cityLabel.setBounds(0, 120, 565, 45);
@@ -104,7 +123,7 @@ public class WeatherAppGUI extends JFrame {
                         LocalTime.now().getHour() :
                         Integer.parseInt(selectedHour.split(":")[0]);
 
-                weatherData = WeatherAppBackend.getWeatherData(userInput, hour);
+                weatherData = WeatherAppBackend.getWeatherData(userInput, hour, timezoneToggle.getText().toLowerCase());
 
                 String weatherCondition = (String) weatherData.get("weather_condition");
 

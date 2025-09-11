@@ -10,16 +10,18 @@ import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class WeatherAppBackend {
-    public static JSONObject getWeatherData(String locationName, int hour) {
+    public static JSONObject getWeatherData(String locationName, int hour, String timeZone) {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
         double latitude = (double) location.get("latitude");
         double longitude = (double) location.get("longitude");
 
+        String timeZoneParemeter = timeZone.equals("auto") ? "auto" : "Asia%2FTbilisi";
+
         String urlString = "https://api.open-meteo.com/v1/forecast?" +
                 "latitude=" + latitude + "&longitude=" + longitude +
-                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=auto";
+                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=" + timeZoneParemeter;
 
         try {
             HttpURLConnection connection = fetchAPIResponse(urlString);
@@ -27,43 +29,44 @@ public class WeatherAppBackend {
             if (connection.getResponseCode() != 200) {
                 System.out.println("Failed: HTTP error code " + connection.getResponseCode());
                 return null;
+            } else {
+
+                StringBuilder resultJson = new StringBuilder();
+                Scanner scanner = new Scanner(connection.getInputStream());
+                while (scanner.hasNext()) {
+                    resultJson.append(scanner.nextLine());
+                }
+
+                scanner.close();
+                connection.disconnect();
+
+                JSONParser parser = new JSONParser();
+                JSONObject resultjsonObject = (JSONObject) parser.parse(String.valueOf(resultJson));
+
+                JSONObject hourly = (JSONObject) resultjsonObject.get("hourly");
+                JSONArray time = (JSONArray) hourly.get("time");
+                int index = findIndexOfCurerntTime(time, hour);
+
+                JSONArray temperatureData = (JSONArray) hourly.get("temperature_2m");
+                double temperature = (double) temperatureData.get(index);
+
+                JSONArray weatherCodeData = (JSONArray) hourly.get("weather_code");
+                String weatherCondition = convertWeatherCode((long) weatherCodeData.get(index));
+
+                JSONArray relativeHumidityData = (JSONArray) hourly.get("relative_humidity_2m");
+                long humidity = (long) relativeHumidityData.get(index);
+
+                JSONArray windSpeedData = (JSONArray) hourly.get("wind_speed_10m");
+                double windSpeed = (double) windSpeedData.get(index);
+
+                JSONObject weatherData = new JSONObject();
+                weatherData.put("temperature", temperature);
+                weatherData.put("weather_condition", weatherCondition);
+                weatherData.put("humidity", humidity);
+                weatherData.put("wind_speed", windSpeed);
+
+                return weatherData;
             }
-
-            StringBuilder resultJson = new StringBuilder();
-            Scanner scanner = new Scanner(connection.getInputStream());
-            while (scanner.hasNext()) {
-                resultJson.append(scanner.nextLine());
-            }
-
-            scanner.close();
-            connection.disconnect();
-
-            JSONParser parser = new JSONParser();
-            JSONObject resultjsonObject = (JSONObject) parser.parse(String.valueOf(resultJson));
-
-            JSONObject hourly = (JSONObject) resultjsonObject.get("hourly");
-            JSONArray time = (JSONArray) hourly.get("time");
-            int index = findIndexOfCurerntTime(time, hour);
-
-            JSONArray temperatureData = (JSONArray) hourly.get("temperature_2m");
-            double temperature = (double)  temperatureData.get(index);
-
-            JSONArray weatherCodeData = (JSONArray) hourly.get("weather_code");
-            String weatherCondition = convertWeatherCode((long) weatherCodeData.get(index));
-
-            JSONArray relativeHumidityData = (JSONArray) hourly.get("relative_humidity_2m");
-            long humidity = (long) relativeHumidityData.get(index);
-
-            JSONArray windSpeedData = (JSONArray) hourly.get("wind_speed_10m");
-            double windSpeed = (double) windSpeedData.get(index);
-
-            JSONObject weatherData = new JSONObject();
-            weatherData.put("temperature", temperature);
-            weatherData.put("weather_condition", weatherCondition);
-            weatherData.put("humidity", humidity);
-            weatherData.put("wind_speed", windSpeed);
-
-            return weatherData;
         } catch (Exception e) {
             e.printStackTrace();
         }
