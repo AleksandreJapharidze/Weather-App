@@ -10,18 +10,16 @@ import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class WeatherAppBackend {
-    public static JSONObject getWeatherData(String locationName, int day, int hour, String timeZone) {
+    public static JSONObject getWeatherData(String locationName, int day, int hour) {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
         double latitude = (double) location.get("latitude");
         double longitude = (double) location.get("longitude");
 
-        String timeZoneParemeter = timeZone.equals("auto") ? "auto" : "Asia%2FTbilisi";
-
         String urlString = "https://api.open-meteo.com/v1/forecast?" +
                 "latitude=" + latitude + "&longitude=" + longitude +
-                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=" + timeZoneParemeter;
+                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=Asia%2FTbilisi";
 
         try {
             HttpURLConnection connection = fetchAPIResponse(urlString);
@@ -99,6 +97,46 @@ public class WeatherAppBackend {
 
                 JSONArray locationData = (JSONArray) resultJsonObject.get("results");
                 return locationData;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static JSONObject getSunsetSunriseData(String locationName) {
+        JSONArray locationData = getLocationData(locationName);
+
+        JSONObject location = (JSONObject) locationData.get(0);
+        double latitude = (double) location.get("latitude");
+        double longitude = (double) location.get("longitude");
+        String tzid = "Asia/Tbilisi";
+
+        String urlString = "https://api.sunrise-sunset.org/json?lat=" + latitude +
+                "&lng=" + longitude + "&formatted=0" + "&tzid=" + tzid;
+
+        try {
+            HttpURLConnection connection = fetchAPIResponse(urlString);
+
+            if(connection.getResponseCode() != 200) {
+                System.out.println("Failed: HTTP error code " + connection.getResponseCode());
+                return null;
+            } else {
+                StringBuilder resultJson = new StringBuilder();
+                Scanner scanner = new Scanner(connection.getInputStream());
+                while(scanner.hasNext()) {
+                    resultJson.append(scanner.nextLine());
+                }
+
+                scanner.close();
+                connection.disconnect();
+
+                JSONParser parser = new JSONParser();
+                JSONObject resultJsonObject = (JSONObject) parser.parse(String.valueOf(resultJson));
+
+                JSONObject results = (JSONObject) resultJsonObject.get("results");
+
+                return results;
             }
         } catch (Exception e) {
             e.printStackTrace();

@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
 import java.time.LocalTime;
+import java.time.OffsetDateTime;
 
 public class WeatherAppGUI extends JFrame {
     private JSONObject weatherData;
@@ -42,24 +43,6 @@ public class WeatherAppGUI extends JFrame {
         hourSelector.setBounds(15, 70, 120, 30);
         hourSelector.setFont(new Font("Dialog", Font.PLAIN, 16));
         add(hourSelector);
-
-        JToggleButton timezoneToggle = new JToggleButton("auto");
-        timezoneToggle.setBounds(145, 70, 100, 30);
-        timezoneToggle.setFont(new Font("Dialog", Font.PLAIN, 16));
-        timezoneToggle.addActionListener(e -> {
-            if (timezoneToggle.isSelected()) {
-                timezoneToggle.setText("Tbilisi");
-            } else {
-                timezoneToggle.setText("Auto");
-            }
-        });
-        add(timezoneToggle);
-
-        JLabel instructionLabel = new JLabel("<html><b>Select hour and toggle timezone(Auto or Tbilisi).</b> " +
-                "Auto timezone equates time in your location with the time in the searched city.</html>");
-        instructionLabel.setBounds(260, 70, 320, 30);
-        instructionLabel.setFont(new Font("Dialog", Font.PLAIN, 10));
-        add(instructionLabel);
 
         String[] weatherDays = {"Today", "Tomorrow", "After tomorrow", "In 3 days", "In 4 days", "In 5 days", "In 6 days"};
         JComboBox<String> daySelector = new JComboBox<>(weatherDays);
@@ -140,15 +123,49 @@ public class WeatherAppGUI extends JFrame {
                         LocalTime.now().getHour() :
                         Integer.parseInt(selectedHour.split(":")[0]);
 
-                weatherData = WeatherAppBackend.getWeatherData(userInput, dayOffset, hour, timezoneToggle.getText().toLowerCase());
+                weatherData = WeatherAppBackend.getWeatherData(userInput, dayOffset, hour);
 
                 String weatherCondition = (String) weatherData.get("weather_condition");
 
                 int currentHour = LocalTime.now().withHour(hour).getHour();
 
+                JSONObject results = WeatherAppBackend.getSunsetSunriseData(userInput);
+                if (results == null) {
+                    return;
+                }
+
+                String sunrise = (String) results.get("sunrise");
+                String sunset = (String) results.get("sunset");
+
+                OffsetDateTime currentTime = OffsetDateTime.now().withHour(currentHour);
+                OffsetDateTime sunriseTime = OffsetDateTime.parse(sunrise);
+                OffsetDateTime sunsetTime = OffsetDateTime.parse(sunset);
+
+                if (sunsetTime.isBefore(sunriseTime)) {
+                    // If sunset is before sunrise (like 4:06 AM), it means it's for the next day
+                    if (currentTime.isBefore(sunriseTime)) {
+                        // If current time is before sunrise, use previous day's sunset
+                        sunsetTime = sunsetTime.minusDays(1);
+                    } else {
+                        // If current time is after sunrise, use next day's sunset
+                        sunsetTime = sunsetTime.plusDays(1);
+                    }
+                }
+
+                boolean isNightTime = currentTime.isBefore(sunriseTime) || currentTime.isAfter(sunsetTime);
+
+                System.out.println("Current time: " + currentTime);
+                System.out.println("Sunrise time: " + sunriseTime);
+                System.out.println("Sunset time: " + sunsetTime);
+
+                System.out.println("Current hour (24h): " + currentTime.getHour());
+                System.out.println("Sunrise hour (24h): " + sunriseTime.getHour());
+                System.out.println("Sunset hour (24h): " + sunsetTime.getHour());
+                System.out.println("Is night time: " + isNightTime);
+
                 switch (weatherCondition) {
                     case "Clear":
-                        if ((currentHour >= 19 && currentHour <= 23) || (currentHour >= 0 && currentHour <= 7)) {
+                        if (isNightTime) {
                             weatherConditionImage.setIcon(loadImage("src/pics/clear_nighttime.png"));
                         } else {
                             weatherConditionImage.setIcon(loadImage("src/pics/clear.png"));
