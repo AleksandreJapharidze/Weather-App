@@ -141,18 +141,22 @@ public class WeatherAppGUI extends JFrame {
                 OffsetDateTime sunriseTime = OffsetDateTime.parse(sunrise);
                 OffsetDateTime sunsetTime = OffsetDateTime.parse(sunset);
 
-                if (sunsetTime.isBefore(sunriseTime)) {
-                    // If sunset is before sunrise (like 4:06 AM), it means it's for the next day
-                    if (currentTime.isBefore(sunriseTime)) {
-                        // If current time is before sunrise, use previous day's sunset
-                        sunsetTime = sunsetTime.minusDays(1);
-                    } else {
-                        // If current time is after sunrise, use next day's sunset
-                        sunsetTime = sunsetTime.plusDays(1);
-                    }
-                }
+                int currentHourMinute = currentTime.getHour() * 100 + currentTime.getMinute();
+                int sunriseHourMinute = sunriseTime.getHour() * 100 + sunriseTime.getMinute();
+                int sunsetHourMinute = sunsetTime.getHour() * 100 + sunsetTime.getMinute();
 
-                boolean isNightTime = currentTime.isBefore(sunriseTime) || currentTime.isAfter(sunsetTime);
+                boolean isNightTime;
+
+                if (sunriseHourMinute <= sunsetHourMinute) {
+                    // Normal case: sunrise before sunset in the same day
+                    // Night time is before sunrise OR after sunset
+                    isNightTime = currentHourMinute < sunriseHourMinute || currentHourMinute > sunsetHourMinute;
+                } else {
+                    // Wrapped case: sunset time appears "earlier" than sunrise due to timezone conversion
+                    // This means sunset is actually the next day in the original timezone
+                    // Night time is after sunset AND before sunrise
+                    isNightTime = currentHourMinute > sunsetHourMinute && currentHourMinute < sunriseHourMinute;
+                }
 
                 System.out.println("Current time: " + currentTime);
                 System.out.println("Sunrise time: " + sunriseTime);
