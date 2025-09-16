@@ -135,7 +135,6 @@ public class WeatherAppBackend {
                 JSONObject resultJsonObject = (JSONObject) parser.parse(String.valueOf(resultJson));
 
                 JSONObject results = (JSONObject) resultJsonObject.get("results");
-
                 return results;
             }
         } catch (Exception e) {
@@ -183,41 +182,31 @@ public class WeatherAppBackend {
         String weatherCondition = "";
         if (weatherCode == 0L) {
             weatherCondition = "Clear";
-        } else if (weatherCode <= 3L && weatherCode >= 0L) {
-            weatherCondition = "Cloudy";
-        } else if ((weatherCode >= 51L && weatherCode <= 67L)  || (weatherCode >= 80L && weatherCode <= 99L)) {
+        } else if (weatherCode <= 3L && weatherCode >= 1L) {
+            weatherCondition = "Partly Cloudy";
+        } else if (weatherCode <= 48L && weatherCode >= 45L) {
+            weatherCondition = "Fog";
+        } else if (weatherCode <= 55L && weatherCode >= 51L) {
+            weatherCondition = "Drizzle";
+        } else if (weatherCode <= 57L && weatherCode >= 56L) {
+            weatherCondition = "Freezing Drizzle";
+        } else if (weatherCode <= 65L && weatherCode >= 61L) {
             weatherCondition = "Rain";
-        } else if (weatherCode >= 71L && weatherCode <= 77L) {
-            weatherCondition = "Snow";
+        } else if (weatherCode <= 67L && weatherCode >= 66L) {
+            weatherCondition = "Freezing Rain";
+        } else if (weatherCode <= 75L && weatherCode >= 71L) {
+            weatherCondition = "Snow Fall";
+        } else if (weatherCode == 77L) {
+            weatherCondition = "Snow Grains";
+        } else if (weatherCode <= 82L && weatherCode >= 80L) {
+            weatherCondition = "Rain Showers";
+        } else if (weatherCode <= 86L && weatherCode >= 85L) {
+            weatherCondition = "Snow Showers";
+        } else if (weatherCode == 95L) {
+            weatherCondition = "Thunderstorm";
+        } else if (weatherCode <= 99L && weatherCode >= 96L) {
+            weatherCondition = "Thunderstorm with Hail";
         }
-
-//        if (weatherCode == 0L) {
-//            weatherCondition = "Clear";
-//        } else if (weatherCode <= 3L && weatherCode >= 1L) {
-//            weatherCondition = "Partly Cloudy";
-//        } else if (weatherCode <= 48L && weatherCode >= 45L) {
-//            weatherCondition = "Fog";
-//        } else if (weatherCode <= 55L && weatherCode >= 51L) {
-//            weatherCondition = "Drizzle";
-//        } else if (weatherCode <= 57L && weatherCode >= 56L) {
-//            weatherCondition = "Freezing Drizzle";
-//        } else if (weatherCode <= 65L && weatherCode >= 61L) {
-//            weatherCondition = "Rain";
-//        } else if (weatherCode <= 67L && weatherCode >= 66L) {
-//            weatherCondition = "Freezing Rain";
-//        } else if (weatherCode <= 75L && weatherCode >= 71L) {
-//            weatherCondition = "Snow Fall";
-//        } else if (weatherCode == 77L) {
-//            weatherCondition = "Snow Grains";
-//        } else if (weatherCode <= 82L && weatherCode >= 80L) {
-//            weatherCondition = "Rain Showers";
-//        } else if (weatherCode <= 86L && weatherCode >= 85L) {
-//            weatherCondition = "Snow Showers";
-//        } else if (weatherCode == 95L) {
-//            weatherCondition = "Thunderstorm";
-//        } else if (weatherCode <= 99L && weatherCode >= 96L) {
-//            weatherCondition = "Thunderstorm with Hail";
-//        }
         return weatherCondition;
     }
 }

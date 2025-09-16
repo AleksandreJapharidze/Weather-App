@@ -14,6 +14,7 @@ import java.time.OffsetDateTime;
 
 public class WeatherAppGUI extends JFrame {
     private JSONObject weatherData;
+    private JLabel sunrisesunsetIndicator;
 
     public WeatherAppGUI() {
         super("Simple Weather App");
@@ -56,7 +57,7 @@ public class WeatherAppGUI extends JFrame {
         cityLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(cityLabel);
 
-        JLabel weatherConditionImage = new JLabel(loadImage("src/pics/cloudy.png"));
+        JLabel weatherConditionImage = new JLabel(loadImage("src/batch/cloudy.png"));
         weatherConditionImage.setBounds(60, 200, 450, 225);
         add(weatherConditionImage);
 
@@ -67,10 +68,14 @@ public class WeatherAppGUI extends JFrame {
         add(temperatureText);
 
         JLabel weatherConditionDescription = new JLabel("...");
-        weatherConditionDescription.setBounds(60, 480, 450, 36);
+        weatherConditionDescription.setBounds(60, 480, 450, 45);
         weatherConditionDescription.setFont(new Font("Dialog", Font.PLAIN, 35));
         weatherConditionDescription.setHorizontalAlignment(SwingConstants.CENTER);
         add(weatherConditionDescription);
+
+        sunrisesunsetIndicator = new JLabel();
+        sunrisesunsetIndicator.setBounds(450, 100, 100, 100);
+        add(sunrisesunsetIndicator);
 
         JLabel humidityImage =  new JLabel(loadImage("src/pics/humidity.png"));
         humidityImage.setBounds(25, 650, 74, 66);
@@ -141,6 +146,17 @@ public class WeatherAppGUI extends JFrame {
                 OffsetDateTime sunriseTime = OffsetDateTime.parse(sunrise);
                 OffsetDateTime sunsetTime = OffsetDateTime.parse(sunset);
 
+                int sunriseHour = sunriseTime.getHour();
+                int sunsetHour = sunsetTime.getHour();
+
+                if (sunriseHour == currentHour) {
+                    sunrisesunsetIndicator.setIcon(loadImage("src/batch/sunrise.png"));
+                } else if (sunsetHour == currentHour) {
+                    sunrisesunsetIndicator.setIcon(loadImage("src/batch/sunset.png"));
+                } else {
+                    sunrisesunsetIndicator.setIcon(null);
+                }
+
                 int currentHourMinute = currentTime.getHour() * 100 + currentTime.getMinute();
                 int sunriseHourMinute = sunriseTime.getHour() * 100 + sunriseTime.getMinute();
                 int sunsetHourMinute = sunsetTime.getHour() * 100 + sunsetTime.getMinute();
@@ -170,19 +186,46 @@ public class WeatherAppGUI extends JFrame {
                 switch (weatherCondition) {
                     case "Clear":
                         if (isNightTime) {
-                            weatherConditionImage.setIcon(loadImage("src/pics/clear_nighttime.png"));
+                            weatherConditionImage.setIcon(loadImage("src/batch/clear-night.png"));
                         } else {
-                            weatherConditionImage.setIcon(loadImage("src/pics/clear.png"));
+                            weatherConditionImage.setIcon(loadImage("src/batch/clear-day.png"));
                         }
                         break;
-                    case "Cloudy":
-                        weatherConditionImage.setIcon(loadImage("src/pics/cloudy.png"));
+                    case "Partly Cloudy":
+                        if (isNightTime) {
+                            weatherConditionImage.setIcon(loadImage("src/batch/partly-cloudy-night.png"));
+                        } else {
+                            weatherConditionImage.setIcon(loadImage("src/batch/partly-cloudy-day.png"));
+                        }
                         break;
-                    case "Rain":
-                        weatherConditionImage.setIcon(loadImage("src/pics/rain.png"));
+                    case "Fog":
+                        weatherConditionImage.setIcon(loadImage("src/batch/fog.png"));
                         break;
-                    case "Snow":
-                        weatherConditionImage.setIcon(loadImage("src/pics/snow.png"));
+                    case "Drizzle", "Freezing Drizzle", "Rain Showers":
+                        if (isNightTime) {
+                            weatherConditionImage.setIcon(loadImage("src/batch/showers-night.png"));
+                        } else {
+                            weatherConditionImage.setIcon(loadImage("src/batch/showers-day.png"));
+                        }
+                        break;
+                    case "Rain", "Freezing Rain":
+                        weatherConditionImage.setIcon(loadImage("src/batch/rain.png"));
+                        break;
+                    case "Snow Fall", "Snow Grains":
+                        weatherConditionImage.setIcon(loadImage("src/batch/snow.png"));
+                        break;
+                    case "Snow Showers":
+                        if (isNightTime) {
+                            weatherConditionImage.setIcon(loadImage("src/batch/snow-showers-night.png"));
+                        } else {
+                            weatherConditionImage.setIcon(loadImage("src/batch/snow-showers-day.png"));
+                        }
+                        break;
+                    case "Thunderstorm":
+                        weatherConditionImage.setIcon(loadImage("src/batch/thunder.png"));
+                        break;
+                    case "Thunderstorm with Hail":
+                        weatherConditionImage.setIcon(loadImage("src/batch/hail.png"));
                         break;
                 }
 
