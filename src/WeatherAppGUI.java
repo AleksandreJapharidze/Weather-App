@@ -166,12 +166,12 @@ public class WeatherAppGUI extends JFrame {
                 if (sunriseHourMinute <= sunsetHourMinute) {
                     // Normal case: sunrise before sunset in the same day
                     // Night time is before sunrise OR after sunset
-                    isNightTime = currentHourMinute < sunriseHourMinute || currentHourMinute > sunsetHourMinute;
+                    isNightTime = currentHourMinute <= sunriseHourMinute || currentHourMinute >= sunsetHourMinute;
                 } else {
                     // Wrapped case: sunset time appears "earlier" than sunrise due to timezone conversion
                     // This means sunset is actually the next day in the original timezone
                     // Night time is after sunset AND before sunrise
-                    isNightTime = currentHourMinute > sunsetHourMinute && currentHourMinute < sunriseHourMinute;
+                    isNightTime = currentHourMinute >= sunsetHourMinute && currentHourMinute <= sunriseHourMinute;
                 }
 
                 System.out.println("Current time: " + currentTime);
