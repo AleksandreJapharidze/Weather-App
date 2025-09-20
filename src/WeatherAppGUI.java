@@ -9,6 +9,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 
@@ -57,7 +58,7 @@ public class WeatherAppGUI extends JFrame {
         cityLabel.setHorizontalAlignment(SwingConstants.CENTER);
         add(cityLabel);
 
-        JLabel weatherConditionImage = new JLabel(loadImage("src/batch/cloudy.png"));
+        JLabel weatherConditionImage = new JLabel(loadImage("batch/cloudy.png"));
         weatherConditionImage.setBounds(60, 200, 450, 225);
         add(weatherConditionImage);
 
@@ -77,7 +78,7 @@ public class WeatherAppGUI extends JFrame {
         sunrisesunsetIndicator.setBounds(450, 100, 100, 100);
         add(sunrisesunsetIndicator);
 
-        JLabel humidityImage =  new JLabel(loadImage("src/pics/humidity.png"));
+        JLabel humidityImage =  new JLabel(loadImage("pics/humidity.png"));
         humidityImage.setBounds(25, 650, 74, 66);
         add(humidityImage);
 
@@ -86,7 +87,7 @@ public class WeatherAppGUI extends JFrame {
         humidityText.setFont(new Font("Dialog", Font.PLAIN, 15));
         add(humidityText);
 
-        JLabel windSpeedImage = new JLabel(loadImage("src/pics/windspeed.png"));
+        JLabel windSpeedImage = new JLabel(loadImage("pics/windspeed.png"));
         windSpeedImage.setBounds(370, 650, 74, 66);
         add(windSpeedImage);
 
@@ -95,7 +96,7 @@ public class WeatherAppGUI extends JFrame {
         windSpeedText.setFont(new Font("Dialog", Font.PLAIN, 15));
         add(windSpeedText);
 
-        JButton searchButton = new JButton(loadImage("src/pics/search.png"));
+        JButton searchButton = new JButton(loadImage("pics/search.png"));
         searchButton.setBounds(520, 15, 50, 45);
         searchButton.addActionListener(new ActionListener() {
             @Override
@@ -150,9 +151,9 @@ public class WeatherAppGUI extends JFrame {
                 int sunsetHour = sunsetTime.getHour();
 
                 if (sunriseHour == currentHour) {
-                    sunrisesunsetIndicator.setIcon(loadImage("src/batch/sunrise.png"));
+                    sunrisesunsetIndicator.setIcon(loadImage("batch/sunrise.png"));
                 } else if (sunsetHour == currentHour) {
-                    sunrisesunsetIndicator.setIcon(loadImage("src/batch/sunset.png"));
+                    sunrisesunsetIndicator.setIcon(loadImage("batch/sunset.png"));
                 } else {
                     sunrisesunsetIndicator.setIcon(null);
                 }
@@ -186,46 +187,46 @@ public class WeatherAppGUI extends JFrame {
                 switch (weatherCondition) {
                     case "Clear":
                         if (isNightTime) {
-                            weatherConditionImage.setIcon(loadImage("src/batch/clear-night.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/clear-night.png"));
                         } else {
-                            weatherConditionImage.setIcon(loadImage("src/batch/clear-day.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/clear-day.png"));
                         }
                         break;
                     case "Partly Cloudy":
                         if (isNightTime) {
-                            weatherConditionImage.setIcon(loadImage("src/batch/partly-cloudy-night.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/partly-cloudy-night.png"));
                         } else {
-                            weatherConditionImage.setIcon(loadImage("src/batch/partly-cloudy-day.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/partly-cloudy-day.png"));
                         }
                         break;
                     case "Fog":
-                        weatherConditionImage.setIcon(loadImage("src/batch/fog.png"));
+                        weatherConditionImage.setIcon(loadImage("batch/fog.png"));
                         break;
                     case "Drizzle", "Freezing Drizzle", "Rain Showers":
                         if (isNightTime) {
-                            weatherConditionImage.setIcon(loadImage("src/batch/showers-night.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/showers-night.png"));
                         } else {
-                            weatherConditionImage.setIcon(loadImage("src/batch/showers-day.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/showers-day.png"));
                         }
                         break;
                     case "Rain", "Freezing Rain":
-                        weatherConditionImage.setIcon(loadImage("src/batch/rain.png"));
+                        weatherConditionImage.setIcon(loadImage("batch/rain.png"));
                         break;
                     case "Snow Fall", "Snow Grains":
-                        weatherConditionImage.setIcon(loadImage("src/batch/snow.png"));
+                        weatherConditionImage.setIcon(loadImage("batch/snow.png"));
                         break;
                     case "Snow Showers":
                         if (isNightTime) {
-                            weatherConditionImage.setIcon(loadImage("src/batch/snow-showers-night.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/snow-showers-night.png"));
                         } else {
-                            weatherConditionImage.setIcon(loadImage("src/batch/snow-showers-day.png"));
+                            weatherConditionImage.setIcon(loadImage("batch/snow-showers-day.png"));
                         }
                         break;
                     case "Thunderstorm":
-                        weatherConditionImage.setIcon(loadImage("src/batch/thunder.png"));
+                        weatherConditionImage.setIcon(loadImage("batch/thunder.png"));
                         break;
                     case "Thunderstorm with Hail":
-                        weatherConditionImage.setIcon(loadImage("src/batch/hail.png"));
+                        weatherConditionImage.setIcon(loadImage("batch/hail.png"));
                         break;
                 }
 
@@ -246,12 +247,17 @@ public class WeatherAppGUI extends JFrame {
 
     private ImageIcon loadImage(String path) {
         try {
-            BufferedImage image = ImageIO.read(new File(path));
+            java.net.URL imageUrl = getClass().getResource("/" + path);
+            if (imageUrl == null) {
+                System.out.println("Resource not found: " + path);
+                return null;
+            }
+            BufferedImage image = ImageIO.read(imageUrl);
             return new ImageIcon(image);
-        }  catch (IOException e) {
+        } catch (IOException e) {
             e.printStackTrace();
+            System.out.println("Error loading image: " + path);
         }
-        System.out.println("Path not found");
         return null;
     }
 }
