@@ -204,7 +204,9 @@ public class WeatherAppBackend {
     }
 
     private static String getCurrentTime(int day, int hour) {
-        LocalDateTime currentDateTime = LocalDateTime.now().plusDays(day).withHour(hour)
+        LocalDateTime currentDateTime = LocalDateTime.now()
+                .plusDays(day)
+                .withHour(hour)
                 .withMinute(0)
                 .withSecond(0)
                 .withNano(0);

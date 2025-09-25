@@ -10,6 +10,7 @@ import java.awt.image.BufferedImage;
 import java.io.IOException;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
+import java.time.ZoneId;
 
 public class WeatherAppGUI extends JFrame {
     private JSONObject weatherData;
@@ -149,15 +150,40 @@ public class WeatherAppGUI extends JFrame {
                         LocalTime.now().getHour() :
                         Integer.parseInt(selectedHour.split(":")[0]);
 
-                weatherData = WeatherAppBackend.getWeatherData(userInput, dayOffset, hour, tzid);
+                int currentHour = hour;
+                int adjustedDayOffset = dayOffset;
+
+                if (selectedTimezone.equals("Searched City")) {
+                    JSONObject timezoneData = WeatherAppBackend.getTimezoneData(userInput);
+                    if (timezoneData != null && timezoneData.containsKey("timezone_id")) {
+                        String locationTzid = (String) timezoneData.get("timezone_id");
+
+                        // Get current time in both timezones
+                        OffsetDateTime localTime = OffsetDateTime.now(ZoneId.of("Asia/Tbilisi"));
+                        OffsetDateTime locationTime = OffsetDateTime.now(ZoneId.of(locationTzid));
+
+                        // Calculate day difference
+                        int localDayOfYear = localTime.getDayOfYear();
+                        int locationDayOfYear = locationTime.getDayOfYear();
+                        int dayDifference = locationDayOfYear - localDayOfYear;
+
+                        // Adjust the day offset based on the timezone difference
+                        adjustedDayOffset = dayOffset + dayDifference;
+
+                        // If "now" is selected, use the location's current hour
+                        if (selectedHour.equals("now")) {
+                            currentHour = locationTime.getHour();
+                        }
+                    }
+                }
+
+                weatherData = WeatherAppBackend.getWeatherData(userInput, adjustedDayOffset, currentHour, tzid);
                 if (weatherData == null) {
                     System.out.println("Failed to get weather data");
                     return;
                 }
 
                 String weatherCondition = (String) weatherData.get("weather_condition");
-
-                int currentHour = LocalTime.now().withHour(hour).getHour();
 
                 JSONObject results = WeatherAppBackend.getSunsetSunriseData(userInput, tzid);
                 if (results == null) {
@@ -167,7 +193,8 @@ public class WeatherAppGUI extends JFrame {
                 String sunrise = (String) results.get("sunrise");
                 String sunset = (String) results.get("sunset");
 
-                OffsetDateTime currentTime = OffsetDateTime.now().withHour(currentHour)
+                OffsetDateTime currentTime = OffsetDateTime.now()
+                        .withHour(currentHour)
                         .withMinute(0)
                         .withSecond(0)
                         .withNano(0);
