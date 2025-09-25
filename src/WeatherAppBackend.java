@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class WeatherAppBackend {
-    public static JSONObject getWeatherData(String locationName, int day, int hour) {
+    public static JSONObject getWeatherData(String locationName, int day, int hour, String tzid) {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
@@ -19,7 +19,7 @@ public class WeatherAppBackend {
 
         String urlString = "https://api.open-meteo.com/v1/forecast?" +
                 "latitude=" + latitude + "&longitude=" + longitude +
-                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=Asia%2FTbilisi";
+                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=" + tzid;
 
         try {
             HttpURLConnection connection = fetchAPIResponse(urlString);
@@ -104,13 +104,12 @@ public class WeatherAppBackend {
         return null;
     }
 
-    public static JSONObject getSunsetSunriseData(String locationName) {
+    public static JSONObject getSunsetSunriseData(String locationName, String tzid) {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
         double latitude = (double) location.get("latitude");
         double longitude = (double) location.get("longitude");
-        String tzid = "Asia/Tbilisi";
 
         String urlString = "https://api.sunrise-sunset.org/json?lat=" + latitude +
                 "&lng=" + longitude + "&formatted=0" + "&tzid=" + tzid;
@@ -136,6 +135,42 @@ public class WeatherAppBackend {
 
                 JSONObject results = (JSONObject) resultJsonObject.get("results");
                 return results;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    public static JSONObject getTimezoneData(String locationName) {
+        JSONArray locationData = getLocationData(locationName);
+
+        JSONObject location = (JSONObject) locationData.get(0);
+        double latitude = (double) location.get("latitude");
+        double longitude = (double) location.get("longitude");
+
+        String urlString = "https://api.wheretheiss.at/v1/coordinates/" + latitude + "," + longitude;
+
+        try {
+            HttpURLConnection connection = fetchAPIResponse(urlString);
+
+            if(connection.getResponseCode() != 200) {
+                System.out.println("Failed: HTTP error code " + connection.getResponseCode());
+                return null;
+            } else {
+                StringBuilder resultJson = new StringBuilder();
+                Scanner scanner = new Scanner(connection.getInputStream());
+                while(scanner.hasNext()) {
+                    resultJson.append(scanner.nextLine());
+                }
+
+                scanner.close();
+                connection.disconnect();
+
+                JSONParser parser = new JSONParser();
+                JSONObject resultJsonObject = (JSONObject) parser.parse(String.valueOf(resultJson));
+
+                return resultJsonObject;
             }
         } catch (Exception e) {
             e.printStackTrace();

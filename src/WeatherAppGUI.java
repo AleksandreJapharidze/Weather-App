@@ -7,9 +7,7 @@ import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
-import java.io.File;
 import java.io.IOException;
-import java.io.InputStream;
 import java.time.LocalTime;
 import java.time.OffsetDateTime;
 
@@ -51,6 +49,12 @@ public class WeatherAppGUI extends JFrame {
         daySelector.setBounds(15, 110, 120, 30);
         daySelector.setFont(new Font("Dialog", Font.PLAIN, 16));
         add(daySelector);
+
+        String[] tzids = {"Asia/Tbilisi", "Searched City"};
+        JComboBox<String> timezoneSelector = new JComboBox<>(tzids);
+        timezoneSelector.setBounds(450, 70, 120, 30);
+        timezoneSelector.setFont(new Font("Dialog", Font.PLAIN, 16));
+        add(timezoneSelector);
 
         JLabel cityLabel = new JLabel("...");
         cityLabel.setBounds(0, 120, 565, 45);
@@ -102,14 +106,30 @@ public class WeatherAppGUI extends JFrame {
             @Override
             public void actionPerformed(ActionEvent e) {
                 String userInput = searchField.getText();
-                JSONArray locationData = WeatherAppBackend.getLocationData(userInput);
-
-                if (locationData != null) {
-                    cityLabel.setText(userInput);
-                }
-
                 if (userInput.replaceAll("\\s", "").length() <= 0) {
                     return;
+                }
+
+                String selectedTimezone = (String) timezoneSelector.getSelectedItem();
+                String tzid;
+
+                if (selectedTimezone.equals("Asia/Tbilisi")) {
+                    tzid = "Asia/Tbilisi";
+                } else {
+                    // Get timezone of searched city
+                    JSONObject timezoneData = WeatherAppBackend.getTimezoneData(userInput);
+                    if (timezoneData != null && timezoneData.containsKey("timezone_id")) {
+                        tzid = (String) timezoneData.get("timezone_id");
+                    } else {
+                        // Fallback to Asia/Tbilisi if timezone data is not available
+                        tzid = "Asia/Tbilisi";
+                        System.out.println("Could not get timezone for " + userInput + ", using Asia/Tbilisi");
+                    }
+                }
+
+                JSONArray locationData = WeatherAppBackend.getLocationData(userInput);
+                if (locationData != null) {
+                    cityLabel.setText(userInput);
                 }
 
                 String selectedDay = (String) daySelector.getSelectedItem();
@@ -129,13 +149,17 @@ public class WeatherAppGUI extends JFrame {
                         LocalTime.now().getHour() :
                         Integer.parseInt(selectedHour.split(":")[0]);
 
-                weatherData = WeatherAppBackend.getWeatherData(userInput, dayOffset, hour);
+                weatherData = WeatherAppBackend.getWeatherData(userInput, dayOffset, hour, tzid);
+                if (weatherData == null) {
+                    System.out.println("Failed to get weather data");
+                    return;
+                }
 
                 String weatherCondition = (String) weatherData.get("weather_condition");
 
                 int currentHour = LocalTime.now().withHour(hour).getHour();
 
-                JSONObject results = WeatherAppBackend.getSunsetSunriseData(userInput);
+                JSONObject results = WeatherAppBackend.getSunsetSunriseData(userInput, tzid);
                 if (results == null) {
                     return;
                 }
@@ -143,7 +167,10 @@ public class WeatherAppGUI extends JFrame {
                 String sunrise = (String) results.get("sunrise");
                 String sunset = (String) results.get("sunset");
 
-                OffsetDateTime currentTime = OffsetDateTime.now().withHour(currentHour);
+                OffsetDateTime currentTime = OffsetDateTime.now().withHour(currentHour)
+                        .withMinute(0)
+                        .withSecond(0)
+                        .withNano(0);
                 OffsetDateTime sunriseTime = OffsetDateTime.parse(sunrise);
                 OffsetDateTime sunsetTime = OffsetDateTime.parse(sunset);
 
@@ -175,6 +202,7 @@ public class WeatherAppGUI extends JFrame {
                     isNightTime = currentHourMinute >= sunsetHourMinute && currentHourMinute <= sunriseHourMinute;
                 }
 
+                System.out.println("Using timezone: " + tzid);
                 System.out.println("Current time: " + currentTime);
                 System.out.println("Sunrise time: " + sunriseTime);
                 System.out.println("Sunset time: " + sunsetTime);
