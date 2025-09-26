@@ -57,6 +57,12 @@ public class WeatherAppGUI extends JFrame {
         timezoneSelector.setFont(new Font("Dialog", Font.PLAIN, 16));
         add(timezoneSelector);
 
+        String[] tempUnits = {"Celsius", "Fahrenheit"};
+        JComboBox<String> tempUnitSelector = new JComboBox<>(tempUnits);
+        tempUnitSelector.setBounds(450, 110, 120, 30);
+        tempUnitSelector.setFont(new Font("Dialog", Font.PLAIN, 16));
+        add(tempUnitSelector);
+
         JLabel cityLabel = new JLabel("...");
         cityLabel.setBounds(0, 120, 565, 45);
         cityLabel.setFont(new Font("Dialog", Font.PLAIN, 25));
@@ -80,7 +86,7 @@ public class WeatherAppGUI extends JFrame {
         add(weatherConditionDescription);
 
         sunrisesunsetIndicator = new JLabel();
-        sunrisesunsetIndicator.setBounds(450, 100, 100, 100);
+        sunrisesunsetIndicator.setBounds(450, 150, 100, 100);
         add(sunrisesunsetIndicator);
 
         JLabel humidityImage =  new JLabel(loadImage("pics/humidity.png"));
@@ -177,7 +183,13 @@ public class WeatherAppGUI extends JFrame {
                     }
                 }
 
-                weatherData = WeatherAppBackend.getWeatherData(userInput, adjustedDayOffset, currentHour, tzid);
+                String selectedTempUnit = (String) tempUnitSelector.getSelectedItem();
+                String tempUnit = "";
+                if (selectedTempUnit.equals("Fahrenheit")) {
+                    tempUnit = "&temperature_unit=fahrenheit";
+                }
+
+                weatherData = WeatherAppBackend.getWeatherData(userInput, adjustedDayOffset, currentHour, tzid, tempUnit);
                 if (weatherData == null) {
                     System.out.println("Failed to get weather data");
                     return;
@@ -286,7 +298,8 @@ public class WeatherAppGUI extends JFrame {
                 }
 
                 double temperature = (double) weatherData.get("temperature");
-                temperatureText.setText(temperature + " C");
+                char unitSymbol = selectedTempUnit.equals("Celsius") ? 'C' : 'F';
+                temperatureText.setText(temperature + " " + unitSymbol);
 
                 weatherConditionDescription.setText(weatherCondition);
 

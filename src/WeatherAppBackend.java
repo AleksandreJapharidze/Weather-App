@@ -10,7 +10,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Scanner;
 
 public class WeatherAppBackend {
-    public static JSONObject getWeatherData(String locationName, int day, int hour, String tzid) {
+    public static JSONObject getWeatherData(String locationName, int day, int hour, String tzid, String tempUnit) {
         JSONArray locationData = getLocationData(locationName);
 
         JSONObject location = (JSONObject) locationData.get(0);
@@ -19,7 +19,7 @@ public class WeatherAppBackend {
 
         String urlString = "https://api.open-meteo.com/v1/forecast?" +
                 "latitude=" + latitude + "&longitude=" + longitude +
-                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=" + tzid;
+                "&hourly=weather_code,temperature_2m,wind_speed_10m,relative_humidity_2m&timezone=" + tzid + tempUnit;
 
         try {
             HttpURLConnection connection = fetchAPIResponse(urlString);
